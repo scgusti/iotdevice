@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Lampu</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        h2 { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Monitoring Lampu IoT</h2>
+    <h3>Status Lampu: <span id="statusLampu">Loading...</span></h3>
+
+    <script>
+        // Konfigurasi Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyCW0ZY-MltyBh4yC9yj8qFjwv8pnK9-GL4",
+            authDomain: "dbsensorsc.firebaseapp.com",
+            databaseURL: "https://dbsensorsc-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "dbsensorsc",
+            storageBucket: "dbsensorsc.appspot.com",
+            messagingSenderId: "1078724009529",
+            // appId: "1:1078724009529:web:xxxxxxxx"
+        };
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        // Update status lampu secara real-time
+        database.ref("/lampu").on("value", function(snapshot) {
+            var status = snapshot.val();
+            document.getElementById("statusLampu").innerText = status === 1 ? "Menyala" : "Mati";
+        });
+    </script>
+</body>
+</html>
+  

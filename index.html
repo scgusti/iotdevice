@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Light Controller</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #f44336;
+            --background-color: #f5f5f5;
+            --card-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-on {
+            background-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .status-off {
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 10px var(--secondary-color);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-on {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-off {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .device-name-container {
+            margin-top: 20px;
+        }
+
+        .device-name-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .save-name-btn {
+            background-color: #2196F3;
+            color: white;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Smart Light Controller</h2>
+        
+        <div class="card">
+            <div class="status-container">
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusLampu">Loading...</span>
+                </div>
+                <div id="deviceName"></div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn-on" onclick="nyalakan()">Nyalakan</button>
+                <button class="btn-off" onclick="matikan()">Matikan</button>
+            </div>
+
+            <div class="device-name-container">
+                <input type="text" id="newDeviceName" class="device-name-input" placeholder="Masukkan nama perangkat baru">
+                <button onclick="updateDeviceName()" class="save-name-btn">Simpan Nama</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyCW0ZY-MltyBh4yC9yj8qFjwv8pnK9-GL4",
+            authDomain: "dbsensorsc.firebaseapp.com",
+            databaseURL: "https://dbsensorsc-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "dbsensorsc",
+            storageBucket: "dbsensorsc.appspot.com",
+            messagingSenderId: "1078724009529",
+        };
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        function nyalakan() {
+            database.ref("/lampu").set(1);
+        }
+
+        function matikan() {
+            database.ref("/lampu").set(0);
+        }
+
+        function updateDeviceName() {
+            const newName = document.getElementById("newDeviceName").value;
+            if (newName.trim() !== "") {
+                database.ref("/deviceName").set(newName)
+                    .then(() => {
+                        alert("Nama perangkat berhasil diperbarui!");
+                        document.getElementById("newDeviceName").value = "";
+                    })
+                    .catch((error) => {
+                        alert("Error: " + error.message);
+                    });
+            }
+        }
+
+        // Update status lampu secara real-time
+        database.ref("/lampu").on("value", function(snapshot) {
+            const status = snapshot.val();
+            const statusText = status === 1 ? "Menyala" : "Mati";
+            document.getElementById("statusLampu").innerText = statusText;
+            
+            const statusDot = document.getElementById("statusDot");
+            statusDot.className = "status-dot " + (status === 1 ? "status-on" : "status-off");
+        });
+
+        // Monitor perubahan nama perangkat
+        database.ref("/deviceName").on("value", function(snapshot) {
+            const deviceName = snapshot.val() || "Lampu 1";
+            document.getElementById("deviceName").innerText = deviceName;
+        });
+    </script>
+</body>
+</html>
